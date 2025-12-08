@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useMutation, gql } from '@apollo/client';
 import { CssBaseline, TextField, Box, CircularProgress, Typography } from '@mui/material';
 import { Layout, StyledButton } from './styles';
-import { GET_ACTIVITIES } from '../FeedGeral';
+import { GET_ACTIVITIES_BY_USER } from '../FeedGeral';
 
 const ADD_ACTIVITY = gql`
   mutation AddActivity(
@@ -73,7 +73,7 @@ export function Publicar() {
 
   const [addActivity, {loading, error}] = useMutation(ADD_ACTIVITY, {
     variables: formState,
-    refetchQueries: [{ query: GET_ACTIVITIES }]
+    refetchQueries: [{ query: GET_ACTIVITIES_BY_USER }]
   });
 
   const handleSubmit = (event: any) => {
