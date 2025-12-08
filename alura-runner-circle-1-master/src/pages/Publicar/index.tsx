@@ -39,7 +39,23 @@ type FormState = {
   user: string;
   userImage: string;
   imageUrl: string;
-}
+};
+
+type ActivityType = {
+  id: string;
+  time: string;
+  type: string;
+  distance: string;
+  calories: string;
+  bpm: string;
+  user: string;
+  userImage: string;
+  imageUrl: string;
+};
+
+type QueryResult = {
+  mockActivities: ActivityType[];
+};
 
 const validateForm = (state: FormState) => {
   const errors: { [key: string]: string } = {};
@@ -48,16 +64,13 @@ const validateForm = (state: FormState) => {
   if (!state.distance) errors.distance = "Distância é obrigatória";
   if (!state.calories) errors.calories = "Calorias são obrigatórias";
   if (!state.bpm) errors.bpm = "Batimentos são obrigatórios";
-  if (!state.user) errors.user = "Nome do usuário é obrigatório";
+  if (!state.user) errors.user = "Usuário é obrigatório";
   if (!state.userImage) errors.userImage = "Imagem do usuário é obrigatória";
-  if (!state.imageUrl) errors.imageUrl = "Imagem da atividade é obrigatória";
+  if (!state.imageUrl) errors.imageUrl = "URL da imagem da atividade é obrigatória";
   return errors;
- 
-  // Para fins didáticos, esta sendo implementado todas validações
-}
+};
 
 export function Publicar() {
-
   const [formState, setFormState] = useState<FormState>({
     time: '',
     type: '',
@@ -66,26 +79,42 @@ export function Publicar() {
     bpm: '',
     user: '',
     userImage: '',
-    imageUrl: ''
+    imageUrl: '',
   });
 
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
-  const [addActivity, {loading, error}] = useMutation(ADD_ACTIVITY, {
+  const [addActivity, { loading, error }] = useMutation(ADD_ACTIVITY, {
     variables: formState,
-    refetchQueries: [{ query: GET_ACTIVITIES_BY_USER }]
+    update: (cache, { data: { addActivity } }) => {
+      const data = cache.readQuery<QueryResult>({ query: GET_ACTIVITIES_BY_USER, variables: { user: formState.user } });
+      if (data) {
+        cache.writeQuery({
+          query: GET_ACTIVITIES_BY_USER,
+          variables: { user: formState.user },
+          data: {
+            mockActivities: [...data.mockActivities, addActivity],
+          },
+        });
+      }
+    },
+    onError: (err) => {
+      console.error('Mutation error:', err);
+      setErrors({ form: 'Erro ao enviar os dados. Tente novamente mais tarde.' });
+    },
   });
 
-  const handleSubmit = (event: any) => {
+  const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();
-
     const validationErrors = validateForm(formState);
     if (Object.keys(validationErrors).length > 0) {
       setErrors(validationErrors);
       return;
     }
-
-    addActivity();
+    addActivity().catch((err) => {
+      console.error('Error during mutation:', err);
+      setErrors({ form: 'Erro ao enviar os dados. Tente novamente mais tarde.' });
+    });
     setFormState({
       time: '',
       type: '',
@@ -94,7 +123,7 @@ export function Publicar() {
       bpm: '',
       user: '',
       userImage: '',
-      imageUrl: ''
+      imageUrl: '',
     });
     setErrors({});
   };
@@ -103,9 +132,9 @@ export function Publicar() {
     const { name, value } = e.target;
     setFormState({
       ...formState,
-      [name]: value
+      [name]: value,
     });
-  }
+  };
 
   return (
     <Layout>
@@ -113,7 +142,8 @@ export function Publicar() {
       <form onSubmit={handleSubmit}>
         <h2>Publicar treino</h2>
         {loading && <Box display="flex" justifyContent="center"><CircularProgress /></Box>}
-        {error && <Typography color="error">Erro ao publicar atividade: {error.message}</Typography>}
+        {error && <Typography color="error">Erro ao enviar os dados: {error.message}</Typography>}
+        {errors.form && <Typography color="error">{errors.form}</Typography>}
         <TextField
           fullWidth
           label="URL da Imagem da Atividade"
@@ -169,17 +199,17 @@ export function Publicar() {
           error={!!errors.bpm}
           helperText={errors.bpm}
         />
-          <TextField
-            fullWidth
-            label="Nome do Usuário"
-            variant="outlined"
-            margin="normal"
-            name="user"
-            value={formState.user}
-            onChange={handleChange}
-            error={!!errors.user}
-            helperText={errors.user}
-          />
+        <TextField
+          fullWidth
+          label="Usuário"
+          variant="outlined"
+          margin="normal"
+          name="user"
+          value={formState.user}
+          onChange={handleChange}
+          error={!!errors.user}
+          helperText={errors.user}
+        />
         <TextField
           fullWidth
           label="Horário"
@@ -206,17 +236,22 @@ export function Publicar() {
           <StyledButton type="submit" variant="contained" color="primary" disabled={loading}>
             Enviar
           </StyledButton>
-          <StyledButton type="reset" variant="outlined" color="secondary" onClick={() => setFormState({
-            time: '',
-            type: '',
-            distance: '',
-            calories: '',
-            bpm: '',
-            user: '',
-            userImage: '',
-            imageUrl: ''
-          })
-          }
+          <StyledButton
+            type="reset"
+            variant="outlined"
+            color="secondary"
+            onClick={() =>
+              setFormState({
+                time: '',
+                type: '',
+                distance: '',
+                calories: '',
+                bpm: '',
+                user: '',
+                userImage: '',
+                imageUrl: '',
+              })
+            }
           >
             Limpar
           </StyledButton>

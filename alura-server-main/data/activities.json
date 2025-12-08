@@ -70,5 +70,27 @@
     "user": "",
     "userImage": "",
     "imageUrl": ""
+  },
+  {
+    "id": 7,
+    "time": "12:00",
+    "type": "Running",
+    "distance": "5km",
+    "calories": "300",
+    "bpm": "140",
+    "user": "Maria",
+    "userImage": "https://dgalvywyr863hv.cloudfront.net/pictures/athletes/26038488/23890190/3/large.jpg",
+    "imageUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRh-BL5mfltDoNzvUCaK7EGrl7q9WoFylrCjKupUZ23OQ"
+  },
+  {
+    "id": 8,
+    "time": "12:00",
+    "type": "Running",
+    "distance": "5km",
+    "calories": "300",
+    "bpm": "140",
+    "user": "Thamires",
+    "userImage": "https://dgalvywyr863hv.cloudfront.net/pictures/athletes/26038488/23890190/3/large.jpg",
+    "imageUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRh-BL5mfltDoNzvUCaK7EGrl7q9WoFylrCjKupUZ23OQ"
   }
 ]
