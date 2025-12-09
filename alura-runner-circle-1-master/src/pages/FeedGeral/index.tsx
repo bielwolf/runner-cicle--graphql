@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useQuery, gql, useReactiveVar } from '@apollo/client';
 import { Box, CssBaseline, Grid, TextField, CircularProgress, Typography } from '@mui/material';
@@ -74,4 +73,3 @@ export function FeedGeral() {
     </Box>
   );
 }
-
