@@ -1,5 +1,5 @@
 import styled from 'styled-components';
-import backgroundImage from '../../assets/loginForm/Círcular.svg';
+import backgroundImage from '../../assets/loginForm/Círcular.svg';
 
 export const LayoutContainer = styled.div`
   background-image: url(${backgroundImage});

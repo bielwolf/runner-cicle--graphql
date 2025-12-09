@@ -1,12 +1,14 @@
-import React, { useState } from 'react'
-import { useQuery, gql } from '@apollo/client';
+
+import React from 'react';
+import { useQuery, gql, useReactiveVar } from '@apollo/client';
 import { Box, CssBaseline, Grid, TextField, CircularProgress, Typography } from '@mui/material';
 import { FeedContainer } from './styles';
-import { ActivityCard, Activity } from '../../components/ActivityCard';
+import { Activity, ActivityCard } from '../../components/ActivityCard';
+import { searchQueryVar } from '../../apolloClient';
 
 export const GET_ACTIVITIES_BY_USER = gql`
-  query GetActivitiesByUser ($user: String!) {
-     mockActivities (user: $user) {
+  query GetActivitiesByUser($user: String) {
+    mockActivities(user: $user) {
       id
       time
       type
@@ -21,25 +23,43 @@ export const GET_ACTIVITIES_BY_USER = gql`
 `;
 
 export function FeedGeral() {
-
-  const [user, setUser] = useState('');
+  const user = useReactiveVar(searchQueryVar);
 
   const { data, loading, error } = useQuery(GET_ACTIVITIES_BY_USER, {
     variables: { user },
-    skip: !user,
+    skip: !user, // Pula a consulta se o usuário não estiver definido
   });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setUser(e.target.value)
-  }
+    searchQueryVar(e.target.value);
+  };
 
   return (
     <Box flex="1">
       <CssBaseline />
-      <TextField fullWidth placeholder='Digite o nome do usuário' variant='outlined' value={user} onChange={handleChange} style={{marginBottom: '20px'}}/>
-      {loading && (<Box display="flex" justifyContent="center" mt={2}> <CircularProgress/> </Box>)}
-      {error && (<Box display="flex" justifyContent="center" mt={2}> <Typography color="error">Erro ao buscar dados:</Typography> </Box>)}
-      {!loading && !error && data && data.mockActivities.length === 0 && (<Box display="flex" justifyContent="center" mt={2}> <Typography> Nenhuma atividade encontrada para o usuário "{user}"</Typography></Box>)}
+      <TextField
+        fullWidth
+        placeholder="Digite o nome do usuário"
+        variant="outlined"
+        value={user}
+        onChange={handleChange}
+        style={{ marginBottom: '20px' }}
+      />
+      {loading && (
+        <Box display="flex" justifyContent="center" mt={2}>
+          <CircularProgress />
+        </Box>
+      )}
+      {error && (
+        <Box display="flex" justifyContent="center" mt={2}>
+          <Typography color="error">Erro ao buscar dados: {error.message}</Typography>
+        </Box>
+      )}
+      {!loading && !error && data && data.mockActivities.length === 0 && (
+        <Box display="flex" justifyContent="center" mt={2}>
+          <Typography>Nenhuma atividade encontrada para o usuário "{user}".</Typography>
+        </Box>
+      )}
       {data && data.mockActivities.length > 0 && (
         <FeedContainer maxWidth="lg">
           <Grid container spacing={3}>
@@ -54,3 +74,4 @@ export function FeedGeral() {
     </Box>
   );
 }
+

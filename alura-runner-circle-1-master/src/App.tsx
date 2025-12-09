@@ -9,14 +9,15 @@ import client from './apolloClient';
 function App() {
   return (
     <ApolloProvider client={client}>
-      <ThemeProvider theme={defaultTheme}>
-        <BrowserRouter>
-          <Router />
-        </BrowserRouter>
-        <GlobalStyle />
-      </ThemeProvider>
+    <ThemeProvider theme={defaultTheme}>
+      <BrowserRouter>
+        <Router />
+      </BrowserRouter>
+      <GlobalStyle />
+    </ThemeProvider>
     </ApolloProvider>
   );
 }
+
 
 export default App;

@@ -24,8 +24,6 @@ export interface Activity {
   bpm: string;
   user: string;
   userImage: string; // URL da imagem do usuário
-  likes: number;
-  comments: number;
   imageUrl: string; // URL da imagem do exercício
 }
 

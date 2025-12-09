@@ -87,6 +87,7 @@ export function Publicar() {
   const [addActivity, { loading, error }] = useMutation(ADD_ACTIVITY, {
     variables: formState,
     update: (cache, { data: { addActivity } }) => {
+    // Atualiza o cache manualmente
       const data = cache.readQuery<QueryResult>({ query: GET_ACTIVITIES_BY_USER, variables: { user: formState.user } });
       if (data) {
         cache.writeQuery({
@@ -97,9 +98,10 @@ export function Publicar() {
           },
         });
       }
-      cache.evict({ fieldName: 'mockAtivities '});
+      // Invalida o cache
+      cache.evict({ fieldName: 'mockActivities' });
       cache.gc();
-
+      
     },
     onError: (err) => {
       console.error('Mutation error:', err);
