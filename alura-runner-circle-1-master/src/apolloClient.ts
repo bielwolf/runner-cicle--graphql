@@ -44,6 +44,5 @@ export const SET_SEARCH_QUERY = gql`
   }
 `;
 
-export const offsetvar = makeVar(0);
-export const limitVar = makeVar(100);
+
 export default client;
