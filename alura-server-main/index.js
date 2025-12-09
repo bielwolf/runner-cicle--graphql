@@ -18,8 +18,19 @@ const typeDefs = gql`
     id: ID!
     time: String!
     type: String!
-    distance: String!
-    calories: String!
+    distance: Float!
+    calories: Float!
+    bpm: String!
+    user: String!
+    userImage: String!
+    imageUrl: String!
+  }
+
+  input ActivityInput {
+    time: String!
+    type: String!
+    distance: Float!
+    calories: Float!
     bpm: String!
     user: String!
     userImage: String!
@@ -27,20 +38,13 @@ const typeDefs = gql`
   }
 
   type Query {
-    mockActivities(user: String): [Activity]
+    mockActivities(user: String, offset: Int, limit: Int): [Activity]
   }
 
   type Mutation {
-    addActivity(
-      time: String!,
-      type: String!,
-      distance: String!,
-      calories: String!,
-      bpm: String!,
-      user: String!,
-      userImage: String!,
-      imageUrl: String!
-    ): Activity
+    addActivity(input:
+    ActivityInput!):
+    Activity
   }
 
   type Subscription {
@@ -50,7 +54,7 @@ const typeDefs = gql`
 
 const resolvers = {
   Query: {
-    mockActivities: (_, { user }) => {
+    mockActivities: (_, { user, offset = 0, limit = 100 }) => {
       if (user) {
         return activities.filter(activity => activity.user === user);
       }
@@ -58,17 +62,10 @@ const resolvers = {
     },
   },
   Mutation: {
-    addActivity: (_, { time, type, distance, calories, bpm, user, userImage, imageUrl }) => {
+    addActivity: (_, { input }) => {
       const newActivity = {
         id: activities.length + 1,
-        time,
-        type,
-        distance,
-        calories,
-        bpm,
-        user,
-        userImage,
-        imageUrl,
+        ...input
       };
       activities.push(newActivity);
       fs.writeFileSync('./data/activities.json', JSON.stringify(activities, null, 2));
