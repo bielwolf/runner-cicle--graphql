@@ -97,6 +97,9 @@ export function Publicar() {
           },
         });
       }
+      cache.evict({ fieldName: 'mockAtivities '});
+      cache.gc();
+
     },
     onError: (err) => {
       console.error('Mutation error:', err);
