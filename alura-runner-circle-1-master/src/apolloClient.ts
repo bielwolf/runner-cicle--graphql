@@ -37,10 +37,15 @@ const httpLink = new HttpLink({
 
 const authLink = setContext((_, { headers }) => {
   const token = localStorage.getItem('token');
+  const csrfToken = document.cookie.split(';').find(item => item.trim().startsWith('XSRF-TOKEN='))?.split('=')[1] || '';
+
+  console.log('CSRF Token:', csrfToken);
+
   return {
     headers: {
       ...headers,
       authorization: token ? `Bearer ${token}` : '',
+      'X-CSRF-Token': csrfToken,
     },
   };
 });
