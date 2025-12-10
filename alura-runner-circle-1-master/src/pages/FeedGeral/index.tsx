@@ -1,6 +1,6 @@
-import React from 'react';
-import { useQuery, useMutation, gql, useReactiveVar } from '@apollo/client';
-import { Box, CssBaseline, Grid, TextField, CircularProgress, Typography } from '@mui/material';
+import React, { useState } from 'react';
+import { useLazyQuery, gql, useMutation, useQuery } from '@apollo/client';
+import { Box, CssBaseline, Grid, TextField, CircularProgress, Typography, Button } from '@mui/material';
 import { FeedContainer } from './styles';
 import { Activity, ActivityCard } from '../../components/ActivityCard';
 import { GET_SEARCH_QUERY, SET_SEARCH_QUERY, searchQueryVar } from '../../apolloClient';
@@ -22,24 +22,22 @@ export const GET_ACTIVITIES_BY_USER = gql`
 `;
 
 export function FeedGeral() {
-  const { data: localData } = useQuery(GET_SEARCH_QUERY)
-  const [setSearchQuery] = useMutation(SET_SEARCH_QUERY)
+  const { data: localData } = useQuery(GET_SEARCH_QUERY);
+  const [setSearchQuery] = useMutation(SET_SEARCH_QUERY);
+  const [inputValue, setInputValue] = useState(''); // Estado local para armazenar o valor do input
 
-  const user = useReactiveVar(searchQueryVar);
-
-  const { data, loading, error } = useQuery(GET_ACTIVITIES_BY_USER, {
-    variables: { user },
-    skip: !user, // Pula a consulta se o usuário não estiver definido
+  const [loadActivities, { called, data, loading, error }] = useLazyQuery(GET_ACTIVITIES_BY_USER, {
+    variables: { user: inputValue }, // Usar o valor do estado local
   });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const query = e.target.value;
-    setSearchQuery({
-      variables: {
-        query
-      }
-    });
-    searchQueryVar(query)
+    setInputValue(e.target.value); // Atualizar somente o estado local
+  };
+
+  const handleSearch = () => {
+    if (inputValue) {
+      loadActivities(); // Carregar atividades baseadas no estado local, não na variável reativa
+    }
   };
 
   return (
@@ -49,10 +47,13 @@ export function FeedGeral() {
         fullWidth
         placeholder="Digite o nome do usuário"
         variant="outlined"
-        value={user}
+        value={inputValue} // Usar o estado local
         onChange={handleChange}
         style={{ marginBottom: '20px' }}
       />
+      <Button variant="contained" color="primary" onClick={handleSearch} style={{ marginBottom: '20px' }}>
+        Buscar
+      </Button>
       {loading && (
         <Box display="flex" justifyContent="center" mt={2}>
           <CircularProgress />
@@ -63,9 +64,9 @@ export function FeedGeral() {
           <Typography color="error">Erro ao buscar dados: {error.message}</Typography>
         </Box>
       )}
-      {!loading && !error && data && data.mockActivities.length === 0 && (
+      {!loading && !error && called && data && data.mockActivities.length === 0 && (
         <Box display="flex" justifyContent="center" mt={2}>
-          <Typography>Nenhuma atividade encontrada para o usuário "{user}".</Typography>
+          <Typography>Nenhuma atividade encontrada para o usuário "{inputValue}".</Typography>
         </Box>
       )}
       {data && data.mockActivities.length > 0 && (

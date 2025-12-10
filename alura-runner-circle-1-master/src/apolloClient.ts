@@ -1,7 +1,8 @@
 import { ApolloClient, InMemoryCache, HttpLink, gql, makeVar } from '@apollo/client';
+import { LocalStorageWrapper, persistCache } from 'apollo3-cache-persist';
 
 // Definindo variáveis reativas para estado local
-export const searchQueryVar = makeVar('');
+export const searchQueryVar = makeVar(''); // Criamos uma variável reativa chamada searchQueryVar
 
 const cache = new InMemoryCache({
   typePolicies: {
@@ -9,7 +10,7 @@ const cache = new InMemoryCache({
       fields: {
         searchQuery: {
           read() {
-            return searchQueryVar();
+            return searchQueryVar(); // Usamos a variável reativa na query local
           },
         },
         mockActivities: {
@@ -23,16 +24,26 @@ const cache = new InMemoryCache({
   },
 });
 
+(async () => {
+  await persistCache({
+    cache,
+    storage: new LocalStorageWrapper(window.localStorage),
+  });
+})();
+
+
+
 const client = new ApolloClient({
   link: new HttpLink({
-    uri: 'http://localhost:4000/'
+    uri: 'http://localhost:4000/graphql'
   }),
   cache,
+  connectToDevTools: true, // Habilita Apollo DevTools
 });
 
 // Definindo a query local
 export const GET_SEARCH_QUERY = gql`
-  query GET_SEARCH_QUERY {
+  query GetSearchQuery {
     searchQuery @client
   }
 `;
@@ -43,6 +54,5 @@ export const SET_SEARCH_QUERY = gql`
     setSearchQuery(query: $query) @client
   }
 `;
-
 
 export default client;
