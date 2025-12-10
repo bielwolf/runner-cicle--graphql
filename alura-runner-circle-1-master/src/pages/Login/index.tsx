@@ -1,3 +1,4 @@
+import { useState } from "react";
 import {
   TextField,
   Typography,
@@ -13,9 +14,32 @@ import {
 } from "./styles";
 import Logo from "../../assets/loginForm/Logo.svg";
 import Runnner from "../../assets/loginForm/RunnerCircle.svg";
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
+import { useMutation } from "@apollo/client";
+import { LOGIN_USER } from "../../apolloClient";
 
 export function Login() {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const navigate = useNavigate();
+  const [login, { loading }] = useMutation(LOGIN_USER);
+
+  const handleLogin = async () => {
+    if (email === "" || password === "") {
+      setError("Por favor, preencha todos os campos.");
+      return;
+    }
+
+    try {
+      const { data } = await login({ variables: { email, password } });
+      localStorage.setItem('token', data.login);
+      navigate("/feed");
+    } catch (err) {
+      setError("Credenciais inválidas.");
+    }
+  };
+
   return (
     <LoginCard>
       <LoginContainer>
@@ -26,6 +50,7 @@ export function Login() {
         >
           Login
         </Typography>
+        {error && <Typography color="error">{error}</Typography>}
         <FormLabel>E-mail</FormLabel>
         <TextField
           color="secondary"
@@ -33,6 +58,8 @@ export function Login() {
           variant="outlined"
           margin="normal"
           fullWidth
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
         />
         <FormLabel>Senha</FormLabel>
         <TextField
@@ -42,14 +69,16 @@ export function Login() {
           variant="outlined"
           margin="normal"
           fullWidth
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
         />
         <FormControlLabel
           control={<Checkbox defaultChecked />}
           label="Lembrar-me"
         />
-
-        <NavLink to="/feed">
-          <ButtonLogin>Login</ButtonLogin>
+        <ButtonLogin onClick={handleLogin} disabled={loading}>Login</ButtonLogin>
+        <NavLink to="/userRegister">
+          <span>Cadastre-se</span>
         </NavLink>
       </LoginContainer>
       <LoginContainerImage>

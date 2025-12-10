@@ -1,8 +1,8 @@
 import { ApolloClient, InMemoryCache, HttpLink, gql, makeVar } from '@apollo/client';
+import { setContext } from '@apollo/client/link/context';
 import { LocalStorageWrapper, persistCache } from 'apollo3-cache-persist';
 
-// Definindo variáveis reativas para estado local
-export const searchQueryVar = makeVar(''); // Criamos uma variável reativa chamada searchQueryVar
+export const searchQueryVar = makeVar('');
 
 const cache = new InMemoryCache({
   typePolicies: {
@@ -10,7 +10,7 @@ const cache = new InMemoryCache({
       fields: {
         searchQuery: {
           read() {
-            return searchQueryVar(); // Usamos a variável reativa na query local
+            return searchQueryVar();
           },
         },
         mockActivities: {
@@ -31,27 +31,47 @@ const cache = new InMemoryCache({
   });
 })();
 
-
-
-const client = new ApolloClient({
-  link: new HttpLink({
-    uri: 'http://localhost:4000/graphql'
-  }),
-  cache,
-  connectToDevTools: true, // Habilita Apollo DevTools
+const httpLink = new HttpLink({
+  uri: 'http://localhost:4000/graphql',
 });
 
-// Definindo a query local
+const authLink = setContext((_, { headers }) => {
+  const token = localStorage.getItem('token');
+  return {
+    headers: {
+      ...headers,
+      authorization: token ? `Bearer ${token}` : '',
+    },
+  };
+});
+
+const client = new ApolloClient({
+  link: authLink.concat(httpLink),
+  cache,
+  connectToDevTools: true,
+});
+
 export const GET_SEARCH_QUERY = gql`
   query GetSearchQuery {
     searchQuery @client
   }
 `;
 
-// Definindo a mutation local
 export const SET_SEARCH_QUERY = gql`
   mutation SetSearchQuery($query: String!) {
     setSearchQuery(query: $query) @client
+  }
+`;
+
+export const REGISTER_USER = gql`
+  mutation RegisterUser($email: String!, $password: String!) {
+    register(email: $email, password: $password)
+  }
+`;
+
+export const LOGIN_USER = gql`
+  mutation LoginUser($email: String!, $password: String!) {
+    login(email: $email, password: $password)
   }
 `;
 
